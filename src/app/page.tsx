@@ -15,7 +15,9 @@ import { convertBlobToBase64 } from "@/utils/utils";
 
 export default function Home() {
   const openai = new OpenAI({
-    apiKey: "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",
+    apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
+    // TODO: Create an API for Whisper so this can be removed
+    dangerouslyAllowBrowser: true
   });
 
   const [picture, setPicture] = useState<string>();
