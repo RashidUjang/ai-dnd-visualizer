@@ -1,7 +1,7 @@
 'use client'
 
 import * as fal from '@fal-ai/serverless-client'
-import { SpeakerQuietIcon } from '@radix-ui/react-icons'
+import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 import { Button, TextField } from '@radix-ui/themes'
 import Image from 'next/image'
 import { ChangeEvent, useEffect, useState } from 'react'
@@ -10,37 +10,78 @@ import useRecordVoice from '@/hooks/useRecordVoice'
 import { convertBlobToBase64 } from '@/utils/utils'
 
 export default function Home() {
-  const [picture, setPicture] = useState<string>()
-  const [prompt, setPrompt] = useState<string>()
-
-  // Audio recorder
+  const [picture, setPicture] = useState<string>('')
+  const [prompt, setPrompt] = useState<string>('')
+  const [transcription, setTranscription] = useState<string>('')
   const { isRecording, recording, startRecording, stopRecording } =
     useRecordVoice()
 
+  useEffect(() => {
+    const getData = async () => {
+      const blobBase64 = await convertBlobToBase64(recording)
+
+      const response = await fetch('/api/speech-to-text', {
+        method: 'POST',
+        body: JSON.stringify({ audio: blobBase64 }),
+      })
+      const body = await response.json()
+
+      console.log('transcription of speech done. the user said: ', body)
+
+      setTranscription(body)
+    }
+
+    getData()
+  }, [recording])
+
+  useEffect(() => {
+    const getData = async () => {
+      const generatedPrompt = await fetch('/api/text-to-prompt', {
+        method: 'POST',
+        body: JSON.stringify({ transcription }),
+      })
+
+      const promptBody = await generatedPrompt.json()
+
+      console.log(
+        'generation of prompt is done, the prompt is: ',
+        promptBody.stableDiffusionPrompt
+      )
+
+      setPrompt(promptBody.stableDiffusionPrompt)
+    }
+
+    getData()
+  }, [transcription])
+
+  useEffect(() => {
+    onClickHandler()
+  }, [prompt])
+
   const stopRecordingHandler = async () => {
     stopRecording()
+    // console.log('🚀 ~ stopRecordingHandler ~ recording:', recording)
 
-    const blobBase64 = await convertBlobToBase64(recording)
+    // const blobBase64 = await convertBlobToBase64(recording)
 
-    const response = await fetch('/api/speech-to-text', {
-      method: 'POST',
-      body: JSON.stringify({ audio: blobBase64 }),
-    })
+    // const response = await fetch('/api/speech-to-text', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ audio: blobBase64 }),
+    // })
+    // const body = await response.json()
 
-    console.log(response)
-  }
+    // setTranscription(body)
 
-  const stopRecordingHandler2 = async () => {
-    stopRecording()
+    // const generatedPrompt = await fetch('/api/text-to-prompt', {
+    //   method: 'POST',
+    //   body: JSON.stringify({ transcription }),
+    // })
 
-    const blobBase64 = await convertBlobToBase64(recording)
+    // const promptBody = await generatedPrompt.json()
 
-    const response = await fetch('/api/speech-to-text', {
-      method: 'POST',
-      body: JSON.stringify({ audio: blobBase64 }),
-    })
+    // setPrompt(promptBody.stableDiffusionPrompt)
 
-    console.log(response)
+    // onClickHandler()
   }
 
   fal.config({
@@ -81,25 +122,38 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex h-screen items-center justify-between p-24">
       {/* https://medium.com/@nazardubovyk/creating-voice-input-with-openai-api-and-next-js-14-ff398c60e5b4 */}
-      <Image src={picture!} width={1024} height={1024} alt="background-image" />
-      <TextField.Input
-        value={prompt}
-        onChange={onChangeHandler}
-        placeholder="Enter your email"
-      />
-      <Button onClick={onClickHandler}>Test</Button>
-      <Button
-        onMouseDown={startRecording} // Start recording when mouse is pressed
-        onMouseUp={stopRecordingHandler2} // Stop recording when mouse is released
-        onTouchStart={startRecording} // Start recording when touch begins on a touch device
-        onTouchEnd={stopRecordingHandler2} // Stop recording when touch ends on a touch device
-      >
-        {/* Microphone icon component */}
-        <SpeakerQuietIcon />
-      </Button>
-      <audio controls src={URL.createObjectURL(recording)}></audio>
+      <div>
+        {picture ? (
+          <Image
+            src={picture}
+            width={800}
+            height={800}
+            alt="background-image"
+          />
+        ) : (
+          <div>Please record audio to get started</div>
+        )}
+      </div>
+      <div className="space-y-2">
+        <TextField.Input
+          value={prompt}
+          onChange={onChangeHandler}
+          placeholder="Current Prompt"
+        />
+        <Button onClick={onClickHandler}>Test</Button>
+        <TextField.Input value={transcription} />
+        <Button
+          onMouseDown={startRecording} // Start recording when mouse is pressed
+          onMouseUp={stopRecordingHandler} // Stop recording when mouse is released
+          onTouchStart={startRecording} // Start recording when touch begins on a touch device
+          onTouchEnd={stopRecordingHandler} // Stop recording when touch ends on a touch device
+        >
+          {isRecording ? <StopIcon /> : <PlayIcon />}
+        </Button>
+        <audio controls src={URL.createObjectURL(recording)}></audio>
+      </div>
     </main>
   )
 }

@@ -6,7 +6,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_KEY,
 })
 
-export async function POST(req: any) {
+export const POST = async (req: any) => {
   const body = await req.json()
 
   const base64Audio = body.audio
@@ -27,12 +27,13 @@ export async function POST(req: any) {
     const data = await openai.audio.transcriptions.create({
       file: readStream,
       model: 'whisper-1',
+      language: "en"
     })
 
     // Remove the temporary file after successful processing
-    // fs.unlinkSync(filePath);
+    fs.unlinkSync(filePath);
 
-    return NextResponse.json(filePath)
+    return NextResponse.json(data.text)
   } catch (error) {
     console.error('Error processing audio:', error)
     return NextResponse.error()

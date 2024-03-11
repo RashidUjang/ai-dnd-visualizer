@@ -20,6 +20,7 @@ const useRecordVoice = () => {
     };
     mediaRecorder.onstop = () => {      
       const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" });
+      console.log("🚀 ~ initializeMediaRecorder ~ audioBlob:", audioBlob)
 
       setRecording(audioBlob);
     };
