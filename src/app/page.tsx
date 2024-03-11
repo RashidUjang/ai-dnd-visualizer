@@ -1,92 +1,84 @@
-"use client";
+'use client'
 
-import { Button, TextField } from "@radix-ui/themes";
+import * as fal from '@fal-ai/serverless-client'
+import { SpeakerQuietIcon } from '@radix-ui/react-icons'
+import { Button, TextField } from '@radix-ui/themes'
+import Image from 'next/image'
+import { ChangeEvent, useEffect, useState } from 'react'
 
-import Image from "next/image";
-
-import * as fal from "@fal-ai/serverless-client";
-import { ChangeEvent, useEffect, useState } from "react";
-import useRecordVoice from "@/hooks/useRecordVoice";
-import { SpeakerQuietIcon } from "@radix-ui/react-icons";
-
-import OpenAI from "openai";
-
-import { convertBlobToBase64 } from "@/utils/utils";
+import useRecordVoice from '@/hooks/useRecordVoice'
+import { convertBlobToBase64 } from '@/utils/utils'
 
 export default function Home() {
-  const openai = new OpenAI({
-    apiKey: process.env.NEXT_PUBLIC_OPENAI_KEY,
-    // TODO: Create an API for Whisper so this can be removed
-    dangerouslyAllowBrowser: true
-  });
-
-  const [picture, setPicture] = useState<string>();
-  const [prompt, setPrompt] = useState<string>();
+  const [picture, setPicture] = useState<string>()
+  const [prompt, setPrompt] = useState<string>()
 
   // Audio recorder
   const { isRecording, recording, startRecording, stopRecording } =
-    useRecordVoice();
+    useRecordVoice()
 
   const stopRecordingHandler = async () => {
-    stopRecording();
+    stopRecording()
 
-    const blobBase64 = await convertBlobToBase64(recording);
+    const blobBase64 = await convertBlobToBase64(recording)
 
-    const response = await fetch("/api/speech-to-text", {
-      method: "POST",
+    const response = await fetch('/api/speech-to-text', {
+      method: 'POST',
       body: JSON.stringify({ audio: blobBase64 }),
-    });
+    })
 
-    console.log(response);
-  };
+    console.log(response)
+  }
 
   const stopRecordingHandler2 = async () => {
-    stopRecording();
+    stopRecording()
 
-    const blobBase64 = await convertBlobToBase64(recording);
+    const blobBase64 = await convertBlobToBase64(recording)
 
-    const response = await fetch("/api/speech-to-text", {
-      method: "POST",
+    const response = await fetch('/api/speech-to-text', {
+      method: 'POST',
       body: JSON.stringify({ audio: blobBase64 }),
-    });
+    })
 
-    console.log(response);
-  };
+    console.log(response)
+  }
 
   fal.config({
     credentials: process.env.NEXT_PUBLIC_FAL_KEY,
-  });
+  })
 
-  const connection = fal.realtime.connect("fal-ai/fast-lightning-sdxl", {
-    connectionKey: "lightning-sdxl",
+  const connection = fal.realtime.connect('fal-ai/fast-lightning-sdxl', {
+    connectionKey: 'lightning-sdxl',
     // Debounce in ms
     throttleInterval: 128,
     onResult: (result) => {
-      const blob = new Blob([result.images[0].content], { type: "image/jpeg" });
-      setPicture(URL.createObjectURL(blob));
+      const blob = new Blob([result.images[0].content], {
+        type: 'image/jpeg',
+      })
+      setPicture(URL.createObjectURL(blob))
     },
     onError: (error) => {
-      console.error(error);
+      console.error(error)
     },
-  });
+  })
 
   const onClickHandler = async () => {
     const input = {
       _force_msgpack: new Uint8Array([]),
       enable_safety_checker: true,
-      image_size: "square_hd",
+      image_size: 'square_hd',
       sync_mode: true,
       num_images: 1,
-      num_inference_steps: "2",
+      num_inference_steps: '2',
       prompt: prompt,
-    };
+    }
 
-    connection.send(input);
-  };
+    connection.send(input)
+  }
 
   const onChangeHandler = (e: ChangeEvent<HTMLInputElement>) => {
-    setPrompt(e.target.value);
-  };
+    setPrompt(e.target.value)
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
@@ -109,5 +101,5 @@ export default function Home() {
       </Button>
       <audio controls src={URL.createObjectURL(recording)}></audio>
     </main>
-  );
+  )
 }
