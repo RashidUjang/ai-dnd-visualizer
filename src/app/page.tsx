@@ -75,7 +75,7 @@ export default function Home() {
       }
 
       const blobBase64 = await convertBlobToBase64(recording)
-      const response = await fetch('/api/speech-to-text', {
+      const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: JSON.stringify({ audio: blobBase64 }),
       })
@@ -94,7 +94,7 @@ export default function Home() {
 
   useEffect(() => {
     const getData = async () => {
-      const generatedPrompt = await fetch('/api/text-to-prompt', {
+      const generatedPrompt = await fetch('/api/generate-prompt', {
         method: 'POST',
         body: JSON.stringify({ transcription }),
       })
