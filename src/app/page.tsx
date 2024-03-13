@@ -15,6 +15,7 @@ import Image from 'next/image'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
+import useFal from '@/hooks/useFal'
 import useRecordVoice from '@/hooks/useRecordVoice'
 import { convertBlobToBase64 } from '@/utils/utils'
 
@@ -28,6 +29,16 @@ export default function Home() {
   const [pictureHistory, setPictureHistory] = useState<string[]>([])
   const [position, setPosition] = useState<number>(0)
   const [inferenceTime, setInferenceTime] = useState<number>(0)
+
+  // TODO: Correct typing
+  const handlePicture = (result: any) => {
+    const blob = new Blob([result.images[0].content], {
+      type: 'image/jpeg',
+    })
+    setCurrentPicture(URL.createObjectURL(blob))
+    setInferenceTime(result.timings.inference)
+  }
+  const { connection } = useFal(handlePicture)
 
   const hasPageBeenRendered = useRef({
     e1: false,
@@ -131,27 +142,6 @@ export default function Home() {
 
     hasPageBeenRendered.current['e4'] = true
   }, [currentPicture])
-
-  // TODO: Refactor to be an API
-  fal.config({
-    credentials: process.env.NEXT_PUBLIC_FAL_KEY,
-  })
-
-  const connection = fal.realtime.connect('fal-ai/fast-lightning-sdxl', {
-    connectionKey: 'lightning-sdxl',
-    // Debounce in ms
-    throttleInterval: 128,
-    onResult: (result) => {
-      const blob = new Blob([result.images[0].content], {
-        type: 'image/jpeg',
-      })
-      setCurrentPicture(URL.createObjectURL(blob))
-      setInferenceTime(result.timings.inference)
-    },
-    onError: (error) => {
-      console.error(error)
-    },
-  })
 
   const generateImage = async () => {
     const input = {
