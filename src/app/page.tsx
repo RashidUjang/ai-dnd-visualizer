@@ -1,32 +1,81 @@
 'use client'
 
 import * as fal from '@fal-ai/serverless-client'
-import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
+import { EnterFullScreenIcon, PlayIcon, StopIcon } from '@radix-ui/react-icons'
 import { Button, TextField } from '@radix-ui/themes'
 import Image from 'next/image'
-import { ChangeEvent, useEffect, useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import useRecordVoice from '@/hooks/useRecordVoice'
 import { convertBlobToBase64 } from '@/utils/utils'
 
 export default function Home() {
-  const [picture, setPicture] = useState<string>('')
+  const [currentPicture, setCurrentPicture] = useState<string>('')
   const [prompt, setPrompt] = useState<string>('')
   const [transcription, setTranscription] = useState<string>('')
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
   const { isRecording, recording, startRecording, stopRecording } =
     useRecordVoice()
+  const [pictureHistory, setPictureHistory] = useState<string[]>([])
+  const [position, setPosition] = useState<number>(0)
+
+  const hasPageBeenRendered = useRef({
+    e1: false,
+    e2: false,
+    e3: false,
+    e4: false,
+  })
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording()
+    } else {
+      startRecording()
+    }
+  }
+
+  const toggleFullscreen = () => {
+    setIsFullscreen((previousValue) => !previousValue)
+  }
+
+  useHotkeys('p', () => {
+    toggleRecording()
+  })
+
+  useHotkeys('f', () => {
+    toggleFullscreen()
+  })
+
+  useHotkeys('g', () => {
+    refreshImage()
+  })
+
+  useHotkeys('left', () => {
+    onClickPreviousHandler()
+  })
+
+  useHotkeys('right', () => {
+    onClickNextHandler()
+  })
 
   useEffect(() => {
     const getData = async () => {
-      const blobBase64 = await convertBlobToBase64(recording)
+      if (recording.size === 0) {
+        return
+      }
 
+      const blobBase64 = await convertBlobToBase64(recording)
       const response = await fetch('/api/speech-to-text', {
         method: 'POST',
         body: JSON.stringify({ audio: blobBase64 }),
       })
-      const body = await response.json()
 
-      console.log('transcription of speech done. the user said: ', body)
+      if (!response.ok) {
+        return
+      }
+
+      const body = await response.json()
 
       setTranscription(body)
     }
@@ -43,47 +92,36 @@ export default function Home() {
 
       const promptBody = await generatedPrompt.json()
 
-      console.log(
-        'generation of prompt is done, the prompt is: ',
-        promptBody.stableDiffusionPrompt
-      )
-
       setPrompt(promptBody.stableDiffusionPrompt)
     }
 
-    getData()
+    if (hasPageBeenRendered.current['e2']) {
+      getData()
+    }
+
+    hasPageBeenRendered.current['e2'] = true
   }, [transcription])
 
   useEffect(() => {
-    onClickHandler()
+    if (hasPageBeenRendered.current['e3']) {
+      generateImage()
+    }
+
+    hasPageBeenRendered.current['e3'] = true
   }, [prompt])
 
-  const stopRecordingHandler = async () => {
-    stopRecording()
-    // console.log('🚀 ~ stopRecordingHandler ~ recording:', recording)
+  useEffect(() => {
+    if (hasPageBeenRendered.current['e4']) {
+      setPictureHistory((prevArray) => {
+        prevArray.push(currentPicture)
+        return [...prevArray]
+      })
+    }
 
-    // const blobBase64 = await convertBlobToBase64(recording)
+    hasPageBeenRendered.current['e4'] = true
+  }, [currentPicture])
 
-    // const response = await fetch('/api/speech-to-text', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ audio: blobBase64 }),
-    // })
-    // const body = await response.json()
-
-    // setTranscription(body)
-
-    // const generatedPrompt = await fetch('/api/text-to-prompt', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ transcription }),
-    // })
-
-    // const promptBody = await generatedPrompt.json()
-
-    // setPrompt(promptBody.stableDiffusionPrompt)
-
-    // onClickHandler()
-  }
-
+  // TODO: Refactor to be an API
   fal.config({
     credentials: process.env.NEXT_PUBLIC_FAL_KEY,
   })
@@ -96,18 +134,19 @@ export default function Home() {
       const blob = new Blob([result.images[0].content], {
         type: 'image/jpeg',
       })
-      setPicture(URL.createObjectURL(blob))
+      setCurrentPicture(URL.createObjectURL(blob))
+      setPosition(Math.max(pictureHistory.length - 1, 0))
     },
     onError: (error) => {
       console.error(error)
     },
   })
 
-  const onClickHandler = async () => {
+  const generateImage = async () => {
     const input = {
       _force_msgpack: new Uint8Array([]),
       enable_safety_checker: true,
-      image_size: 'square_hd',
+      image_size: 'landscape_16_9',
       sync_mode: true,
       num_images: 1,
       num_inference_steps: '2',
@@ -121,20 +160,80 @@ export default function Home() {
     setPrompt(e.target.value)
   }
 
+  const refreshImage = () => {
+    generateImage()
+  }
+
+  const onClickHandler = () => {
+    generateImage()
+  }
+
+  const onClickPreviousHandler = () => {
+    setPosition((previousPosition) => Math.max(previousPosition - 1, 0))
+  }
+
+  const onClickNextHandler = () => {
+    setPosition((previousPosition) =>
+      Math.max(previousPosition + 1, pictureHistory.length - 1)
+    )
+  }
+
   return (
-    <main className="flex h-screen items-center justify-between p-24">
-      {/* https://medium.com/@nazardubovyk/creating-voice-input-with-openai-api-and-next-js-14-ff398c60e5b4 */}
+    <main className="flex h-screen items-center p-24">
       <div>
-        {picture ? (
-          <Image
-            src={picture}
-            width={800}
-            height={800}
-            alt="background-image"
-          />
-        ) : (
-          <div>Please record audio to get started</div>
+        {/* TODO: Fix cursor pointer */}
+        <Button
+          variant="ghost"
+          className="absolute top-0 left-0 z-100 cursor-pointer"
+          onClick={toggleFullscreen}
+        >
+          <EnterFullScreenIcon />
+        </Button>
+        {isFullscreen && (
+          <div
+            className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-80 z-50 flex justify-center items-center"
+            onClick={toggleFullscreen}
+          >
+            <Image
+              src={pictureHistory[position]}
+              className="object-fit"
+              alt="fullscreen"
+              fill={true}
+            />
+          </div>
         )}
+        <div className="h-1/2 w-1/2">
+          {position}
+          {currentPicture ? (
+            <Image
+              className="!static object-contain"
+              src={pictureHistory[position]}
+              fill={true}
+              alt="background-image"
+            />
+          ) : (
+            <div>Please record audio to get started</div>
+          )}
+          <Button onClick={onClickPreviousHandler}>Previous</Button>
+          <Button onClick={onClickNextHandler}>Next</Button>
+          <div>
+            <p>Image History</p>
+            <div className="flex flex-wrap">
+              {pictureHistory.length > 0 &&
+                pictureHistory.map((picture) => {
+                  return (
+                    <Image
+                      className="!static object-contain"
+                      src={picture}
+                      width={128}
+                      height={128}
+                      alt="background-image"
+                    />
+                  )
+                })}
+            </div>
+          </div>
+        </div>
       </div>
       <div className="space-y-2">
         <TextField.Input
@@ -142,17 +241,16 @@ export default function Home() {
           onChange={onChangeHandler}
           placeholder="Current Prompt"
         />
-        <Button onClick={onClickHandler}>Test</Button>
-        <TextField.Input value={transcription} />
+        <Button onClick={onClickHandler}>Generate Image</Button>
+        <TextField.Input readOnly value={transcription} />
         <Button
           onMouseDown={startRecording} // Start recording when mouse is pressed
-          onMouseUp={stopRecordingHandler} // Stop recording when mouse is released
+          onMouseUp={stopRecording} // Stop recording when mouse is released
           onTouchStart={startRecording} // Start recording when touch begins on a touch device
-          onTouchEnd={stopRecordingHandler} // Stop recording when touch ends on a touch device
+          onTouchEnd={stopRecording} // Stop recording when touch ends on a touch device
         >
           {isRecording ? <StopIcon /> : <PlayIcon />}
         </Button>
-        <audio controls src={URL.createObjectURL(recording)}></audio>
       </div>
     </main>
   )

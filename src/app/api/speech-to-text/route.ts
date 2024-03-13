@@ -26,7 +26,7 @@ export const POST = async (req: any) => {
 
     const data = await openai.audio.transcriptions.create({
       file: readStream,
-      model: 'whisper-1',
+      model: 'whisper-1', 
       language: "en"
     })
 
@@ -34,8 +34,8 @@ export const POST = async (req: any) => {
     fs.unlinkSync(filePath);
 
     return NextResponse.json(data.text)
-  } catch (error) {
-    console.error('Error processing audio:', error)
+  } catch (error: any) {
+    console.error('Error processing audio:', error.error.message)
     return NextResponse.error()
   }
 }
