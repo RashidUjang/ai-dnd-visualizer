@@ -19,6 +19,7 @@ export default function Home() {
     useRecordVoice()
   const [pictureHistory, setPictureHistory] = useState<string[]>([])
   const [position, setPosition] = useState<number>(0)
+  const [inferenceTime, setInferenceTime] = useState<number>(0)
 
   const hasPageBeenRendered = useRef({
     e1: false,
@@ -114,6 +115,8 @@ export default function Home() {
     if (hasPageBeenRendered.current['e4']) {
       setPictureHistory((prevArray) => {
         prevArray.push(currentPicture)
+        setPosition(Math.max(prevArray.length - 1, 0))
+
         return [...prevArray]
       })
     }
@@ -135,7 +138,7 @@ export default function Home() {
         type: 'image/jpeg',
       })
       setCurrentPicture(URL.createObjectURL(blob))
-      setPosition(Math.max(pictureHistory.length - 1, 0))
+      setInferenceTime(result.timings.inference)
     },
     onError: (error) => {
       console.error(error)
@@ -146,7 +149,7 @@ export default function Home() {
     const input = {
       _force_msgpack: new Uint8Array([]),
       enable_safety_checker: true,
-      image_size: 'landscape_16_9',
+      image_size: {width: 1920, height: 1080},
       sync_mode: true,
       num_images: 1,
       num_inference_steps: '2',
@@ -174,7 +177,7 @@ export default function Home() {
 
   const onClickNextHandler = () => {
     setPosition((previousPosition) =>
-      Math.max(previousPosition + 1, pictureHistory.length - 1)
+      Math.min(previousPosition + 1, pictureHistory.length - 1)
     )
   }
 
@@ -236,6 +239,12 @@ export default function Home() {
         </div>
       </div>
       <div className="space-y-2">
+        {process.env.NEXT_PUBLIC_DEBUG === 'true' && (
+          <div>
+            <p>Inference Time</p>
+            <p>{inferenceTime * 1000}</p>
+          </div>
+        )}
         <TextField.Input
           value={prompt}
           onChange={onChangeHandler}
