@@ -11,6 +11,7 @@ import {
   TextArea,
   TextField,
 } from '@radix-ui/themes'
+import anime from 'animejs'
 import Image from 'next/image'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -27,8 +28,12 @@ export default function Home() {
   const { isRecording, recording, startRecording, stopRecording } =
     useRecordVoice()
   const [pictureHistory, setPictureHistory] = useState<string[]>([])
-  const [position, setPosition] = useState<number>(0)
+  const [currentPosition, setCurrentPosition] = useState<number>(0)
+  const [previousPosition, setPreviousPosition] = useState<number>(0)
   const [inferenceTime, setInferenceTime] = useState<number>(0)
+
+  const currentImageRef = useRef(null)
+  const previousImageRef = useRef(null)
 
   // TODO: Correct typing
   const handlePicture = (result: any) => {
@@ -134,7 +139,8 @@ export default function Home() {
     if (hasPageBeenRendered.current['e4']) {
       setPictureHistory((prevArray) => {
         prevArray.push(currentPicture)
-        setPosition(Math.max(prevArray.length - 1, 0))
+        setPreviousPosition(currentPosition)
+        setCurrentPosition(Math.max(prevArray.length - 1, 0))
 
         return [...prevArray]
       })
@@ -142,6 +148,34 @@ export default function Home() {
 
     hasPageBeenRendered.current['e4'] = true
   }, [currentPicture])
+
+  useEffect(() => {
+    if (currentImageRef?.current) {
+      (currentImageRef as any).current.style.opacity = 0
+    }
+
+    anime({
+      targets: currentImageRef.current,
+      opacity: 1,
+      duration: 1000,
+      autoplay: true,
+      easing: 'linear',
+    })
+
+    anime({
+      targets: previousImageRef.current,
+      opacity: 0,
+      duration: 1000,
+      easing: 'linear',
+      autoplay: true,
+      complete: () => {
+        // Snap opacity back to 1 once the animation is complete
+        if (previousImageRef?.current) {
+          (previousImageRef as any).current.style.opacity = 1
+        }
+      },
+    })
+  }, [currentPosition])
 
   const generateImage = async () => {
     const input = {
@@ -170,11 +204,13 @@ export default function Home() {
   }
 
   const onClickPreviousHandler = () => {
-    setPosition((previousPosition) => Math.max(previousPosition - 1, 0))
+    setPreviousPosition(currentPosition)
+    setCurrentPosition((previousPosition) => Math.max(previousPosition - 1, 0))
   }
 
   const onClickNextHandler = () => {
-    setPosition((previousPosition) =>
+    setPreviousPosition(currentPosition)
+    setCurrentPosition((previousPosition) =>
       Math.min(previousPosition + 1, pictureHistory.length - 1)
     )
   }
@@ -191,26 +227,73 @@ export default function Home() {
           >
             <EnterFullScreenIcon />
           </Button>
-          {isFullscreen && (
+          {/* {isFullscreen && (
             <div
-              className="fixed top-0 left-0 w-1/2 h-full bg-black bg-opacity-80 z-50 flex items-center justify-center"
+              className="fixed top-0 left-0 bg-black w-full h-full z-50 flex items-center justify-center"
               onClick={toggleFullscreen}
             >
               <Image
-                src={pictureHistory[position]}
-                className="object-fit"
+                src={pictureHistory[previousPosition]}
+                ref={previousImageRef}
+                className="absolute h-full w-full inset-0 object-contain bg-black"
                 alt="fullscreen"
-                fill={true}
+                width={128}
+                height={128}
+                // fill={true}
               />
+              <Image
+                src={pictureHistory[currentPosition]}
+                ref={currentImageRef}
+                className="absolute h-full w-full inset-0 object-contain bg-black"
+                alt="fullscreen"
+                width={128}
+                height={128}
+                // fill={true}
+              />
+            </div>
+          )} */}
+          {isFullscreen && (
+            <div
+              className="fixed flex-row top-0 left-0 w-full h-full bg-black bg-opacity-80 z-50"
+              onClick={toggleFullscreen}
+            >
+              <div className="flex flex-row">
+                <div>
+                  <h2>Previous Image</h2>
+                  <Image
+                    src={pictureHistory[previousPosition]}
+                    ref={previousImageRef}
+                    className="static h-full w-full inset-0"
+                    alt="fullscreen"
+                    width={100}
+                    height={100}
+                    // fill={true}
+                  />
+                </div>
+                <div>
+                  <h2>Current Image</h2>
+                  <Image
+                    src={pictureHistory[currentPosition]}
+                    ref={currentImageRef}
+                    className="static h-full w-full inset-0"
+                    alt="fullscreen"
+                    width={100}
+                    height={100}
+                    // fill={true}
+                  />
+                </div>
+              </div>
             </div>
           )}
           <div>
-            {position}
+            {currentPosition}
             {currentPicture ? (
               <Image
-                className="!static object-contain"
-                src={pictureHistory[position]}
-                fill={true}
+                className="static h-full w-full inset-0 object-contain"
+                src={pictureHistory[currentPosition]}
+                // fill={true}
+                width={128}
+                height={128}
                 alt="background-image"
               />
             ) : (
