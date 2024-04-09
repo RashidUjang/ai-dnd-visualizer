@@ -14,6 +14,7 @@ import {
 import anime from 'animejs'
 import Image from 'next/image'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
+import { renderToString } from 'react-dom/server'
 import { useHotkeys } from 'react-hotkeys-hook'
 
 import CurrentImage from '@/components/CurrentImage'
@@ -37,8 +38,16 @@ export default function Home() {
 
   const currentImageRef = useRef<HTMLImageElement>(null)
   const previousImageRef = useRef<HTMLImageElement>(null)
-  const currentImageRef = useRef(null)
-  const previousImageRef = useRef(null)
+
+  const openPopup = () => {
+    const html = renderToString(<PopupContent />)
+
+    // Open a new window
+    const popupWindow = window.open('', 'Popup', 'width=400,height=300')
+
+    // Write content to the popup
+    popupWindow!.document.write(html)
+  }
 
   // TODO: Correct typing
   const handlePicture = (result: any) => {
@@ -284,7 +293,6 @@ export default function Home() {
           >
             {isRecording ? <StopIcon /> : <PlayIcon />}
           </Button>
-          <Button onClick={openPopup}>Open Popup</Button>
         </Box>
       </Grid>
     </Container>
