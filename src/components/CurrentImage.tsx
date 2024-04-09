@@ -8,7 +8,6 @@ const CurrentImage = ({
   currentPosition,
   toggleFullscreen,
 }: {
-  // TODO: Type this
   currentPicture: string
   pictureHistory: string[]
   currentPosition: number

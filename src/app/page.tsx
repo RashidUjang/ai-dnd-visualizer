@@ -1,7 +1,7 @@
 'use client'
 
 import * as fal from '@fal-ai/serverless-client'
-import { EnterFullScreenIcon, PlayIcon, StopIcon } from '@radix-ui/react-icons'
+import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 import {
   Box,
   Button,
@@ -17,6 +17,7 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
 import CurrentImage from '@/components/CurrentImage'
+import FullScreenImage from '@/components/FullScreenImage'
 import PopupContent from '@/components/PopupContent'
 import useFal from '@/hooks/useFal'
 import useRecordVoice from '@/hooks/useRecordVoice'
@@ -34,6 +35,8 @@ export default function Home() {
   const [previousPosition, setPreviousPosition] = useState<number>(0)
   const [inferenceTime, setInferenceTime] = useState<number>(0)
 
+  const currentImageRef = useRef<HTMLImageElement>(null)
+  const previousImageRef = useRef<HTMLImageElement>(null)
   const currentImageRef = useRef(null)
   const previousImageRef = useRef(null)
 
@@ -221,64 +224,15 @@ export default function Home() {
     <Container>
       <Grid columns="2" gap="3">
         <Box>
-          {/* {isFullscreen && (
-            <div
-              className="fixed top-0 left-0 bg-black w-full h-full z-50 flex items-center justify-center"
-              onClick={toggleFullscreen}
-            >
-              <Image
-                src={pictureHistory[previousPosition]}
-                ref={previousImageRef}
-                className="absolute h-full w-full inset-0 object-contain bg-black"
-                alt="fullscreen"
-                width={128}
-                height={128}
-                // fill={true}
-              />
-              <Image
-                src={pictureHistory[currentPosition]}
-                ref={currentImageRef}
-                className="absolute h-full w-full inset-0 object-contain bg-black"
-                alt="fullscreen"
-                width={128}
-                height={128}
-                // fill={true}
-              />
-            </div>
-          )} */}
-          {isFullscreen && (
-            <div
-              className="fixed flex-row top-0 left-0 w-full h-full bg-black bg-opacity-80 z-50"
-              onClick={toggleFullscreen}
-            >
-              <div className="flex flex-row">
-                <div>
-                  <h2>Previous Image</h2>
-                  <Image
-                    src={pictureHistory[previousPosition]}
-                    ref={previousImageRef}
-                    className="static h-full w-full inset-0"
-                    alt="fullscreen"
-                    width={100}
-                    height={100}
-                    // fill={true}
-                  />
-                </div>
-                <div>
-                  <h2>Current Image</h2>
-                  <Image
-                    src={pictureHistory[currentPosition]}
-                    ref={currentImageRef}
-                    className="static h-full w-full inset-0"
-                    alt="fullscreen"
-                    width={100}
-                    height={100}
-                    // fill={true}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
+          <FullScreenImage
+            isFullscreen={isFullscreen}
+            pictureHistory={pictureHistory}
+            previousPosition={previousPosition}
+            currentPosition={currentPosition}
+            toggleFullscreen={toggleFullscreen}
+            previousImageRef={previousImageRef}
+            currentImageRef={currentImageRef}
+          />
           <div>
             <p>{`${currentPosition + 1}/${pictureHistory.length}`}</p>
             <CurrentImage
