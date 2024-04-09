@@ -16,6 +16,8 @@ import Image from 'next/image'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { useHotkeys } from 'react-hotkeys-hook'
 
+import CurrentImage from '@/components/CurrentImage'
+import PopupContent from '@/components/PopupContent'
 import useFal from '@/hooks/useFal'
 import useRecordVoice from '@/hooks/useRecordVoice'
 import { convertBlobToBase64 } from '@/utils/utils'
@@ -151,7 +153,7 @@ export default function Home() {
 
   useEffect(() => {
     if (currentImageRef?.current) {
-      (currentImageRef as any).current.style.opacity = 0
+      ;(currentImageRef as any).current.style.opacity = 0
     }
 
     anime({
@@ -171,7 +173,7 @@ export default function Home() {
       complete: () => {
         // Snap opacity back to 1 once the animation is complete
         if (previousImageRef?.current) {
-          (previousImageRef as any).current.style.opacity = 1
+          ;(previousImageRef as any).current.style.opacity = 1
         }
       },
     })
@@ -219,14 +221,6 @@ export default function Home() {
     <Container>
       <Grid columns="2" gap="3">
         <Box>
-          {/* TODO: Fix cursor pointer */}
-          <Button
-            variant="ghost"
-            className="absolute top-0 left-0 z-100 cursor-pointer"
-            onClick={toggleFullscreen}
-          >
-            <EnterFullScreenIcon />
-          </Button>
           {/* {isFullscreen && (
             <div
               className="fixed top-0 left-0 bg-black w-full h-full z-50 flex items-center justify-center"
@@ -286,19 +280,13 @@ export default function Home() {
             </div>
           )}
           <div>
-            {currentPosition}
-            {currentPicture ? (
-              <Image
-                className="static h-full w-full inset-0 object-contain"
-                src={pictureHistory[currentPosition]}
-                // fill={true}
-                width={128}
-                height={128}
-                alt="background-image"
-              />
-            ) : (
-              <div>Please record audio to get started</div>
-            )}
+            <p>{`${currentPosition + 1}/${pictureHistory.length}`}</p>
+            <CurrentImage
+              currentPicture={currentPicture}
+              pictureHistory={pictureHistory}
+              currentPosition={currentPosition}
+              toggleFullscreen={toggleFullscreen}
+            />
             <Button onClick={onClickPreviousHandler}>Previous</Button>
             <Button onClick={onClickNextHandler}>Next</Button>
             <div>
@@ -342,6 +330,7 @@ export default function Home() {
           >
             {isRecording ? <StopIcon /> : <PlayIcon />}
           </Button>
+          <Button onClick={openPopup}>Open Popup</Button>
         </Box>
       </Grid>
     </Container>
