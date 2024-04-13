@@ -1,5 +1,5 @@
 import { EnterFullScreenIcon } from '@radix-ui/react-icons'
-import { Button } from '@radix-ui/themes'
+import { Button, IconButton } from '@radix-ui/themes'
 import Image from 'next/image'
 
 const CurrentImage = ({
@@ -14,9 +14,9 @@ const CurrentImage = ({
   toggleFullscreen: () => void
 }) => {
   return currentPicture ? (
-    <div>
+    <div className="relative">
       <Image
-        className="static h-full w-full inset-0 object-contain"
+        className="h-full w-full inset-0 object-contain rounded-xl"
         src={pictureHistory[currentPosition]}
         // fill={true}
         width={128}
@@ -24,13 +24,13 @@ const CurrentImage = ({
         alt="background-image"
       />
       {/* TODO: Fix cursor pointer */}
-      <Button
-        variant="ghost"
-        className="z-100 cursor-pointer"
+      <IconButton
+        radius="full"
+        className="!bg-stone-900/50 !text-stone-400 z-100 absolute right-3 bottom-3 cursor-pointer"
         onClick={toggleFullscreen}
       >
         <EnterFullScreenIcon />
-      </Button>
+      </IconButton>
     </div>
   ) : (
     <div>Please record audio to get started</div>

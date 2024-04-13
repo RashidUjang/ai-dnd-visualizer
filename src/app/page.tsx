@@ -1,6 +1,5 @@
 'use client'
 
-import * as fal from '@fal-ai/serverless-client'
 import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 import {
   Box,
@@ -12,7 +11,7 @@ import {
   TextField,
 } from '@radix-ui/themes'
 import anime from 'animejs'
-import Image from 'next/image'
+import { EmblaOptionsType } from 'embla-carousel'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { renderToString } from 'react-dom/server'
 import { useHotkeys } from 'react-hotkeys-hook'
@@ -20,11 +19,14 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import CurrentImage from '@/components/CurrentImage'
 import FullScreenImage from '@/components/FullScreenImage'
 import PopupContent from '@/components/PopupContent'
+import ThumbnailCarousel from '@/components/ThumbnailCarousel'
 import useFal from '@/hooks/useFal'
 import useRecordVoice from '@/hooks/useRecordVoice'
 import { convertBlobToBase64 } from '@/utils/utils'
 
 export default function Home() {
+  const options: EmblaOptionsType = {}
+
   const [currentPicture, setCurrentPicture] = useState<string>('')
   const [prompt, setPrompt] = useState<string>('')
   const [transcription, setTranscription] = useState<string>('')
@@ -254,20 +256,7 @@ export default function Home() {
             <Button onClick={onClickNextHandler}>Next</Button>
             <div>
               <p>Image History</p>
-              <div className="flex flex-wrap">
-                {pictureHistory.length > 0 &&
-                  pictureHistory.map((picture) => {
-                    return (
-                      <Image
-                        className="!static object-contain"
-                        src={picture}
-                        width={128}
-                        height={128}
-                        alt="background-image"
-                      />
-                    )
-                  })}
-              </div>
+              <ThumbnailCarousel options={options} slides={pictureHistory} />
             </div>
           </div>
         </Box>
