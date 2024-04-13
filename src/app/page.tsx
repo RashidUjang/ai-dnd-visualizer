@@ -7,8 +7,9 @@ import {
   Container,
   Flex,
   Grid,
+  Heading,
+  Text,
   TextArea,
-  TextField,
 } from '@radix-ui/themes'
 import anime from 'animejs'
 import { EmblaOptionsType } from 'embla-carousel'
@@ -18,6 +19,7 @@ import { useHotkeys } from 'react-hotkeys-hook'
 
 import CurrentImage from '@/components/CurrentImage'
 import FullScreenImage from '@/components/FullScreenImage'
+import KeyBindingSection from '@/components/KeyBindingSection'
 import PopupContent from '@/components/PopupContent'
 import ThumbnailCarousel from '@/components/ThumbnailCarousel'
 import useFal from '@/hooks/useFal'
@@ -37,6 +39,8 @@ export default function Home() {
   const [currentPosition, setCurrentPosition] = useState<number>(0)
   const [previousPosition, setPreviousPosition] = useState<number>(0)
   const [inferenceTime, setInferenceTime] = useState<number>(0)
+  const [isEditingTranscription, setIsEditingTranscription] =
+    useState<boolean>(false)
 
   const currentImageRef = useRef<HTMLImageElement>(null)
   const previousImageRef = useRef<HTMLImageElement>(null)
@@ -78,6 +82,10 @@ export default function Home() {
 
   const toggleFullscreen = () => {
     setIsFullscreen((previousValue) => !previousValue)
+  }
+
+  const toggleEditingTranscription = () => {
+    setIsEditingTranscription((previousValue) => !previousValue)
   }
 
   useHotkeys('p', () => {
@@ -245,35 +253,72 @@ export default function Home() {
             currentImageRef={currentImageRef}
           />
           <div>
-            <p>{`${currentPosition + 1}/${pictureHistory.length}`}</p>
+            <p className="text-stone-50">{`${currentPosition + 1}/${pictureHistory.length}`}</p>
             <CurrentImage
               currentPicture={currentPicture}
               pictureHistory={pictureHistory}
               currentPosition={currentPosition}
               toggleFullscreen={toggleFullscreen}
             />
-            <Button onClick={onClickPreviousHandler}>Previous</Button>
-            <Button onClick={onClickNextHandler}>Next</Button>
             <div>
-              <p>Image History</p>
               <ThumbnailCarousel options={options} slides={pictureHistory} />
             </div>
           </div>
         </Box>
-        <Box className="space-y-2">
-          {process.env.NEXT_PUBLIC_DEBUG === 'true' && (
-            <div>
-              <p>Inference Time</p>
-              <p>{inferenceTime * 1000}</p>
-            </div>
-          )}
-          <TextArea
-            value={prompt}
-            onChange={onChangeHandler}
-            placeholder="Current Prompt"
-          />
-          <Button onClick={onClickHandler}>Generate Image</Button>
-          <TextArea readOnly value={transcription} />
+        <Box>
+          <Box>
+            <Heading as="h2" size="6" className="text-stone-300">
+              Key Bindings
+            </Heading>
+            <Box mt="3" p="5" className="text-stone-50 rounded-xl bg-stone-800">
+              <KeyBindingSection />
+            </Box>
+          </Box>
+          <Box className="space-y-2">
+            <Heading as="h2" size="6" className="text-stone-300">
+              Picture Information
+            </Heading>
+            <Box
+              mt="3"
+              p="5"
+              className="text-stone-50 rounded-xl bg-stone-800 space-y-3"
+            >
+              <Box className="space-y-1">
+                <Text as="label" className="font-black text-stone-300">
+                  Transcription
+                </Text>
+                {isEditingTranscription ? (
+                  <TextArea readOnly value={transcription} />
+                ) : (
+                  <Text
+                    as="label"
+                    className="block italic text-sm text-stone-50"
+                  >
+                    {`"${transcription}"`}
+                  </Text>
+                )}
+              </Box>
+              <Box className="space-y-1">
+                <Text as="label" className="font-black text-stone-300">
+                  Prompt
+                </Text>
+                {isEditingTranscription ? (
+                  <TextArea
+                    value={prompt}
+                    onChange={onChangeHandler}
+                    placeholder="Current Prompt"
+                  />
+                ) : (
+                  <Text
+                    as="label"
+                    className="!line-clamp-4 block text-sm text-stone-50"
+                  >
+                    {prompt}
+                  </Text>
+                )}
+              </Box>
+            </Box>
+          </Box>
           <Button
             onMouseDown={startRecording} // Start recording when mouse is pressed
             onMouseUp={stopRecording} // Stop recording when mouse is released
@@ -282,8 +327,18 @@ export default function Home() {
           >
             {isRecording ? <StopIcon /> : <PlayIcon />}
           </Button>
+          <Button onClick={onClickPreviousHandler}>Previous</Button>
+          <Button onClick={onClickNextHandler}>Next</Button>
+          <Button onClick={toggleEditingTranscription}>Edit</Button>
+          <Button onClick={onClickHandler}>Generate Image</Button>
         </Box>
       </Grid>
+      {process.env.NEXT_PUBLIC_DEBUG === 'true' && (
+        <div>
+          <p>Inference Time</p>
+          <p>{inferenceTime * 1000}</p>
+        </div>
+      )}
     </Container>
   )
 }
