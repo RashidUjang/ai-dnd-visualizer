@@ -4,6 +4,8 @@ import '@radix-ui/themes/styles.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 
+import Header from '@/components/Header'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
@@ -19,6 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`bg-stone-900 ${inter.className}`}>
+        <Header />
         <Theme>{children}</Theme>
       </body>
     </html>
