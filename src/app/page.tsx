@@ -240,7 +240,7 @@ export default function Home() {
   }
 
   return (
-    <Container>
+    <Container pt="9" mt="9">
       <Grid columns="2" gap="3">
         <Box>
           <FullScreenImage
@@ -253,7 +253,7 @@ export default function Home() {
             currentImageRef={currentImageRef}
           />
           <div>
-            <p className="text-stone-50">{`${currentPosition + 1}/${pictureHistory.length}`}</p>
+            <p className="text-stone-50 font-black mb-1">{`${currentPosition + 1}/${pictureHistory.length}`}</p>
             <CurrentImage
               currentPicture={currentPicture}
               pictureHistory={pictureHistory}
@@ -294,7 +294,7 @@ export default function Home() {
                     as="label"
                     className="block italic text-sm text-stone-50"
                   >
-                    {`"${transcription}"`}
+                    {transcription ? `"${transcription}"` : '-'}
                   </Text>
                 )}
               </Box>
@@ -313,7 +313,7 @@ export default function Home() {
                     as="label"
                     className="!line-clamp-4 block text-sm text-stone-50"
                   >
-                    {prompt}
+                    {prompt ? prompt : "-"}
                   </Text>
                 )}
               </Box>

@@ -1,5 +1,5 @@
 import { EnterFullScreenIcon } from '@radix-ui/react-icons'
-import { Button, IconButton } from '@radix-ui/themes'
+import { Box, IconButton, Text } from '@radix-ui/themes'
 import Image from 'next/image'
 
 const CurrentImage = ({
@@ -33,7 +33,19 @@ const CurrentImage = ({
       </IconButton>
     </div>
   ) : (
-    <div>Please record audio to get started</div>
+    <Box className="flex items-center justify-center w-full h-96 bg-stone-800 rounded-xl">
+      <Box className="flex flex-col items-center">
+        <Image
+          src="/image-placeholder.png"
+          width={128}
+          height={128}
+          alt="SeerStone logo"
+        />
+        <Text size="4" className="italic text-stone-600 mt-4">
+          Please record audio to get started
+        </Text>
+      </Box>
+    </Box>
   )
 }
 

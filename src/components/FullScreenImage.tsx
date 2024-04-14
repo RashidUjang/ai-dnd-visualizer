@@ -24,25 +24,25 @@ const FullScreenImage = ({
   return (
     isFullscreen && (
       <div
-              className="fixed top-0 left-0 bg-black w-full h-full z-50 flex items-center justify-center"
-              onClick={toggleFullscreen}
-            >
-              <Image
-                src={pictureHistory[previousPosition]}
-                ref={previousImageRef}
-                className="absolute h-full w-full inset-0 object-contain bg-black"
-                alt="fullscreen"
-                width={128}
-                height={128}
-              />
-              <Image
-                src={pictureHistory[currentPosition]}
-                ref={currentImageRef}
-                className="absolute h-full w-full inset-0 object-contain bg-black"
-                alt="fullscreen"
-                width={128}
-                height={128}
-              />
+        className="fixed top-0 left-0 bg-black w-full h-full z-50 flex items-center justify-center"
+        onClick={toggleFullscreen}
+      >
+        <Image
+          src={pictureHistory[previousPosition]}
+          ref={previousImageRef}
+          className="absolute h-full w-full inset-0 object-contain bg-black"
+          alt="fullscreen"
+          width={128}
+          height={128}
+        />
+        <Image
+          src={pictureHistory[currentPosition]}
+          ref={currentImageRef}
+          className="absolute h-full w-full inset-0 object-contain bg-black"
+          alt="fullscreen"
+          width={128}
+          height={128}
+        />
       </div>
       // <div
       //   className="fixed flex-row top-0 left-0 w-full h-full bg-black bg-opacity-80 z-50"
