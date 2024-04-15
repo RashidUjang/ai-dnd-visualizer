@@ -267,19 +267,19 @@ export default function Home() {
         </Box>
         <Box>
           <Box>
-            <Heading as="h2" size="6" className="text-stone-300">
+            <Heading as="h2" size="7" className="text-stone-300 !font-serif !tracking-wider">
               Key Bindings
             </Heading>
-            <Box mt="3" p="5" className="text-stone-50 rounded-xl bg-stone-800">
+            <Box mt="1" p="5" className="text-stone-50 rounded-xl bg-stone-800">
               <KeyBindingSection />
             </Box>
           </Box>
           <Box className="space-y-2">
-            <Heading as="h2" size="6" className="text-stone-300">
+            <Heading as="h2" size="7" className="!font-serif !tracking-wider text-stone-300">
               Picture Information
             </Heading>
             <Box
-              mt="3"
+              mt="1"
               p="5"
               className="text-stone-50 rounded-xl bg-stone-800 space-y-3"
             >
