@@ -258,7 +258,7 @@ export default function Home() {
             currentImageRef={currentImageRef}
           />
           <div>
-            <p className="text-stone-50 font-black mb-1">{`${currentPosition + 1}/${pictureHistory.length}`}</p>
+            <p className="text-stone-50 font-black mb-1">{`${pictureHistory.length === 0 ? 0 : currentPosition + 1}/${pictureHistory.length}`}</p>
             <CurrentImage
               currentPicture={currentPicture}
               pictureHistory={pictureHistory}
