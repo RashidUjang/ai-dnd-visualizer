@@ -20,7 +20,7 @@ const ControlPanel = ({
   onClickNextHandler: () => void
   onClickHandler: () => void
   toggleRecording: () => void
-  isRecording: boolean
+  isRecording: boolean | undefined
 }) => (
   <Toolbar.Root className="flex justify-between px-6 py-4 w-full min-w-max mt-4 rounded-xl bg-stone-800 border border-stone-400 shadow-md shadow-stone-800">
     <Box className="space-x-1">

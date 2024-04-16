@@ -1,13 +1,11 @@
 'use client'
 
-import { PlayIcon, StopIcon } from '@radix-ui/react-icons'
 import {
   Box,
-  Button,
   Container,
-  Flex,
   Grid,
   Heading,
+  Spinner,
   Text,
   TextArea,
 } from '@radix-ui/themes'
@@ -32,7 +30,9 @@ export default function Home() {
 
   const [currentPicture, setCurrentPicture] = useState<string>('')
   const [prompt, setPrompt] = useState<string>('')
+  const [isPrompting, setIsPrompting] = useState<boolean>(false)
   const [transcription, setTranscription] = useState<string>('')
+  const [isTranscribing, setIsTranscribing] = useState<boolean>(false)
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false)
   const { isRecording, recording, startRecording, stopRecording } =
     useRecordVoice()
@@ -114,12 +114,15 @@ export default function Home() {
       if (recording.size === 0) {
         return
       }
+      setIsTranscribing(true)
 
       const blobBase64 = await convertBlobToBase64(recording)
       const response = await fetch('/api/transcribe', {
         method: 'POST',
         body: JSON.stringify({ audio: blobBase64 }),
       })
+
+      console.log('whut')
 
       if (!response.ok) {
         return
@@ -128,6 +131,7 @@ export default function Home() {
       const body = await response.json()
 
       setTranscription(body)
+      setIsTranscribing(false)
     }
 
     getData()
@@ -135,6 +139,7 @@ export default function Home() {
 
   useEffect(() => {
     const getData = async () => {
+      setIsPrompting(true)
       const generatedPrompt = await fetch('/api/generate-prompt', {
         method: 'POST',
         body: JSON.stringify({ transcription }),
@@ -143,6 +148,7 @@ export default function Home() {
       const promptBody = await generatedPrompt.json()
 
       setPrompt(promptBody.stableDiffusionPrompt)
+      setIsPrompting(false)
     }
 
     if (hasPageBeenRendered.current['e2']) {
@@ -293,9 +299,12 @@ export default function Home() {
               className="text-stone-50 rounded-xl bg-stone-800 space-y-3"
             >
               <Box className="space-y-1">
-                <Text as="label" className="font-black text-stone-300">
-                  Transcription
-                </Text>
+                <Box className="flex flex-row items-center">
+                  <Text mr="2" as="label" className="font-black text-stone-300">
+                    Transcription
+                  </Text>
+                  {isTranscribing && <Spinner />}
+                </Box>
                 {isEditingTranscription ? (
                   <TextArea readOnly value={transcription} />
                 ) : (
@@ -308,9 +317,12 @@ export default function Home() {
                 )}
               </Box>
               <Box className="space-y-1">
-                <Text as="label" className="font-black text-stone-300">
-                  Prompt
-                </Text>
+                <Box className="flex flex-row items-center">
+                  <Text mr="2" as="label" className="font-black text-stone-300">
+                    Prompt
+                  </Text>
+                  {isPrompting && <Spinner />}
+                </Box>
                 {isEditingTranscription ? (
                   <TextArea
                     value={prompt}
@@ -322,7 +334,7 @@ export default function Home() {
                     as="label"
                     className="!line-clamp-4 block text-sm text-stone-50"
                   >
-                    {prompt ? prompt : "-"}
+                    {prompt ? prompt : '-'}
                   </Text>
                 )}
               </Box>

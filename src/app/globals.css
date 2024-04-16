@@ -4,5 +4,6 @@
 
 /* Overrides the container width in the page via the radix-theme class that is applied on theme div which wraps all elements. Needs the important flag as globals.css is loaded first */
 .radix-themes {
-    --container-4: 1400px !important;
+  --container-4: 1400px !important;
+  --color-background: #1c1917;
 }

@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`bg-stone-900 ${inter.variable} ${anton.variable}`}>
+      <body className={`!bg-stone-900 ${inter.variable} ${anton.variable}`}>
         <Header />
         <Theme>{children}</Theme>
       </body>
