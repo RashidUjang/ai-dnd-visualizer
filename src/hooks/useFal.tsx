@@ -6,7 +6,7 @@ const useFal = (onResultHandler: any) => {
   const connectionRef = useRef<any>()
 
   fal.config({
-    credentials: process.env.NEXT_PUBLIC_FAL_KEY,
+    proxyUrl: '/api/fal/proxy',
   })
 
   useEffect(() => {

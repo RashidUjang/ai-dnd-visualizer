@@ -122,8 +122,6 @@ export default function Home() {
         body: JSON.stringify({ audio: blobBase64 }),
       })
 
-      console.log('whut')
-
       if (!response.ok) {
         return
       }
