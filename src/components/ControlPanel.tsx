@@ -16,14 +16,14 @@ const ControlPanel = ({
   toggleRecording,
   isRecording,
 }: {
-  onClickPreviousHandler: any
-  onClickNextHandler: any
-  onClickHandler: any
-  toggleRecording: any
-  isRecording: any
+  onClickPreviousHandler: () => void
+  onClickNextHandler: () => void
+  onClickHandler: () => void
+  toggleRecording: () => void
+  isRecording: boolean
 }) => (
   <Toolbar.Root className="flex justify-between px-6 py-4 w-full min-w-max mt-4 rounded-xl bg-stone-800 border border-stone-400 shadow-md shadow-stone-800">
-    <Box className='space-x-1'>
+    <Box className="space-x-1">
       <Toolbar.Button
         onClick={onClickPreviousHandler}
         className="flex-shrink-0 h-full flex-grow-0 basis-auto font-bold px-[5px] rounded inline-flex leading-none items-center justify-center bg-stone-700 border-stone-300 border text-red-300 outline-none"
