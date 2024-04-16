@@ -17,6 +17,7 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import { renderToString } from 'react-dom/server'
 import { useHotkeys } from 'react-hotkeys-hook'
 
+import ControlPanel from '@/components/ControlPanel'
 import CurrentImage from '@/components/CurrentImage'
 import FullScreenImage from '@/components/FullScreenImage'
 import KeyBindingSection from '@/components/KeyBindingSection'
@@ -267,15 +268,23 @@ export default function Home() {
         </Box>
         <Box>
           <Box>
-            <Heading as="h2" size="7" className="text-stone-300 !font-serif !tracking-wider">
+            <Heading
+              as="h2"
+              size="7"
+              className="text-stone-300 !font-serif !tracking-wider"
+            >
               Key Bindings
             </Heading>
             <Box mt="1" p="5" className="text-stone-50 rounded-xl bg-stone-800">
               <KeyBindingSection />
             </Box>
           </Box>
-          <Box className="space-y-2">
-            <Heading as="h2" size="7" className="!font-serif !tracking-wider text-stone-300">
+          <Box className="mt-4">
+            <Heading
+              as="h2"
+              size="7"
+              className="!font-serif !tracking-wider text-stone-300"
+            >
               Picture Information
             </Heading>
             <Box
@@ -319,18 +328,13 @@ export default function Home() {
               </Box>
             </Box>
           </Box>
-          <Button
-            onMouseDown={startRecording} // Start recording when mouse is pressed
-            onMouseUp={stopRecording} // Stop recording when mouse is released
-            onTouchStart={startRecording} // Start recording when touch begins on a touch device
-            onTouchEnd={stopRecording} // Stop recording when touch ends on a touch device
-          >
-            {isRecording ? <StopIcon /> : <PlayIcon />}
-          </Button>
-          <Button onClick={onClickPreviousHandler}>Previous</Button>
-          <Button onClick={onClickNextHandler}>Next</Button>
-          <Button onClick={toggleEditingTranscription}>Edit</Button>
-          <Button onClick={onClickHandler}>Generate Image</Button>
+          <ControlPanel
+            onClickPreviousHandler={onClickPreviousHandler}
+            onClickNextHandler={onClickNextHandler}
+            onClickHandler={onClickHandler}
+            toggleRecording={toggleRecording}
+            isRecording={isRecording}
+          />
         </Box>
       </Grid>
       {process.env.NEXT_PUBLIC_DEBUG === 'true' && (
